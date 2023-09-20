@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ChatView: View {
     @Environment(\.dismiss) var dismiss
-    @ObservedObject var viewModel: WebSocketViewModel
+    @ObservedObject var viewModel: ViewModel
     @State var message: String = ""
 
     var body: some View {
@@ -49,10 +49,19 @@ struct ChatView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                NavigationLink {
-                    ParticipantsListView(users: viewModel.users)
-                } label: {
-                    Image(systemName: "person")
+
+                HStack {
+                    NavigationLink {
+                        ParticipantsListView(users: viewModel.users)
+                    } label: {
+                        Image(systemName: "person")
+                    }
+
+                    NavigationLink {
+                        VideoCallView(viewModel: viewModel)
+                    } label: {
+                        Image(systemName: "video.fill")
+                    }
                 }
             }
             ToolbarItem(placement: .navigationBarLeading) {

@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B150BF3E2ABB2C9800233145 /* WebRTCClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B150BF3D2ABB2C9800233145 /* WebRTCClient.swift */; };
+		B150BF412ABB2DA600233145 /* WebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = B150BF402ABB2DA600233145 /* WebRTC */; };
+		B150BF452ABB54B100233145 /* VideoCallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B150BF442ABB54B100233145 /* VideoCallView.swift */; };
 		B17B70BD2AA9493000212E3F /* SwiftWebSocketApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B17B70BC2AA9493000212E3F /* SwiftWebSocketApp.swift */; };
 		B17B70BF2AA9493000212E3F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B17B70BE2AA9493000212E3F /* ContentView.swift */; };
 		B17B70C12AA9493100212E3F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B17B70C02AA9493100212E3F /* Assets.xcassets */; };
@@ -14,11 +17,13 @@
 		B17B70CE2AA9499300212E3F /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B17B70CD2AA9499300212E3F /* ChatView.swift */; };
 		B17B70D02AA949B900212E3F /* ParticipantsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B17B70CF2AA949B900212E3F /* ParticipantsListView.swift */; };
 		B17B70D22AA949FB00212E3F /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = B17B70D12AA949FB00212E3F /* Models.swift */; };
-		B17B70D42AA94A1E00212E3F /* WebSocketViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B17B70D32AA94A1E00212E3F /* WebSocketViewModel.swift */; };
+		B17B70D42AA94A1E00212E3F /* ViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B17B70D32AA94A1E00212E3F /* ViewModel.swift */; };
 		B17B70D92AA94B0000212E3F /* WebSocketManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B17B70D82AA94B0000212E3F /* WebSocketManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		B150BF3D2ABB2C9800233145 /* WebRTCClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRTCClient.swift; sourceTree = "<group>"; };
+		B150BF442ABB54B100233145 /* VideoCallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoCallView.swift; sourceTree = "<group>"; };
 		B17B70B92AA9493000212E3F /* SwiftWebSocket.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftWebSocket.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B17B70BC2AA9493000212E3F /* SwiftWebSocketApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftWebSocketApp.swift; sourceTree = "<group>"; };
 		B17B70BE2AA9493000212E3F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -27,7 +32,7 @@
 		B17B70CD2AA9499300212E3F /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
 		B17B70CF2AA949B900212E3F /* ParticipantsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticipantsListView.swift; sourceTree = "<group>"; };
 		B17B70D12AA949FB00212E3F /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
-		B17B70D32AA94A1E00212E3F /* WebSocketViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebSocketViewModel.swift; sourceTree = "<group>"; };
+		B17B70D32AA94A1E00212E3F /* ViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModel.swift; sourceTree = "<group>"; };
 		B17B70D82AA94B0000212E3F /* WebSocketManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebSocketManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -36,6 +41,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B150BF412ABB2DA600233145 /* WebRTC in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -83,7 +89,7 @@
 		B17B70CA2AA9496700212E3F /* ViewModel */ = {
 			isa = PBXGroup;
 			children = (
-				B17B70D32AA94A1E00212E3F /* WebSocketViewModel.swift */,
+				B17B70D32AA94A1E00212E3F /* ViewModel.swift */,
 			);
 			path = ViewModel;
 			sourceTree = "<group>";
@@ -93,6 +99,7 @@
 			children = (
 				B17B70BE2AA9493000212E3F /* ContentView.swift */,
 				B17B70CD2AA9499300212E3F /* ChatView.swift */,
+				B150BF442ABB54B100233145 /* VideoCallView.swift */,
 				B17B70CF2AA949B900212E3F /* ParticipantsListView.swift */,
 			);
 			path = View;
@@ -110,6 +117,7 @@
 			isa = PBXGroup;
 			children = (
 				B17B70D82AA94B0000212E3F /* WebSocketManager.swift */,
+				B150BF3D2ABB2C9800233145 /* WebRTCClient.swift */,
 			);
 			path = Manager;
 			sourceTree = "<group>";
@@ -130,6 +138,9 @@
 			dependencies = (
 			);
 			name = SwiftWebSocket;
+			packageProductDependencies = (
+				B150BF402ABB2DA600233145 /* WebRTC */,
+			);
 			productName = SwiftWebSocket;
 			productReference = B17B70B92AA9493000212E3F /* SwiftWebSocket.app */;
 			productType = "com.apple.product-type.application";
@@ -142,7 +153,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1430;
-				LastUpgradeCheck = 1430;
+				LastUpgradeCheck = 1500;
 				TargetAttributes = {
 					B17B70B82AA9493000212E3F = {
 						CreatedOnToolsVersion = 14.3.1;
@@ -158,6 +169,9 @@
 				Base,
 			);
 			mainGroup = B17B70B02AA9493000212E3F;
+			packageReferences = (
+				B150BF3F2ABB2DA600233145 /* XCRemoteSwiftPackageReference "WebRTC" */,
+			);
 			productRefGroup = B17B70BA2AA9493000212E3F /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -184,9 +198,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B17B70D42AA94A1E00212E3F /* WebSocketViewModel.swift in Sources */,
+				B17B70D42AA94A1E00212E3F /* ViewModel.swift in Sources */,
 				B17B70BF2AA9493000212E3F /* ContentView.swift in Sources */,
+				B150BF452ABB54B100233145 /* VideoCallView.swift in Sources */,
 				B17B70CE2AA9499300212E3F /* ChatView.swift in Sources */,
+				B150BF3E2ABB2C9800233145 /* WebRTCClient.swift in Sources */,
 				B17B70D02AA949B900212E3F /* ParticipantsListView.swift in Sources */,
 				B17B70BD2AA9493000212E3F /* SwiftWebSocketApp.swift in Sources */,
 				B17B70D22AA949FB00212E3F /* Models.swift in Sources */,
@@ -201,6 +217,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -233,6 +250,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -261,6 +279,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -293,6 +312,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -391,6 +411,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		B150BF3F2ABB2DA600233145 /* XCRemoteSwiftPackageReference "WebRTC" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/stasel/WebRTC.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 117.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B150BF402ABB2DA600233145 /* WebRTC */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B150BF3F2ABB2DA600233145 /* XCRemoteSwiftPackageReference "WebRTC" */;
+			productName = WebRTC;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = B17B70B12AA9493000212E3F /* Project object */;
 }

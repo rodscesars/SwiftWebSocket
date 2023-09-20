@@ -6,9 +6,13 @@
 //
 
 import Foundation
+import WebRTC
+import AVFoundation
 
-class WebSocketViewModel: ObservableObject, WebSocketConnectionDelegate {
+class ViewModel: ObservableObject {
+
     @Published var webSocketManager: WebSocketManager?
+    @Published var webRTC: WebRTCClient?
     @Published var users: [User] = []
     @Published var messages: [ChatMessage] = []
     @Published var conected = false
@@ -18,10 +22,29 @@ class WebSocketViewModel: ObservableObject, WebSocketConnectionDelegate {
 
     init() {
         webSocketManager = WebSocketManager()
+        webRTC = WebRTCClient(iceServers: [])
         webSocketManager?.delegate = self
+        webRTC?.delegate = self
     }
 
+    func joinRoom() {
+        webSocketManager?.joinRoom(username: username, password: password)
+    }
 
+    func sendMessage(message: String) {
+        webSocketManager?.sendMessage(username: username, message: message, id: id)
+    }
+
+    func sendOffer() {
+        
+    }
+
+//    func sendIce(candidate: RTCIceCandidate) {
+//        self.webSocketManager.localIceCandidate(candidate)
+//    }
+}
+
+extension ViewModel: WebSocketConnectionDelegate {
     func onConnected(connection: WebSocketConnection) {
         print("Connected")
     }
@@ -106,13 +129,30 @@ class WebSocketViewModel: ObservableObject, WebSocketConnectionDelegate {
     func onMessage(connection: WebSocketConnection, data: Data) {
         print("Data message: \(data)")
     }
-
-    func joinRoom() {
-        webSocketManager?.joinRoom(username: username, password: password)
-    }
-
-    func sendMessage(message: String) {
-        webSocketManager?.sendMessage(username: username, message: message, id: id)
-    }
-
 }
+
+extension ViewModel: WebRTCClientDelegate {
+    func webRTCClient(_ client: WebRTCClient, didDiscoverLocalCandidate candidate: RTCIceCandidate) {
+        print("discovered local candidate")
+//        self.sendIce(candidate)
+    }
+
+    func webRTCClient(_ client: WebRTCClient, didChangeConnectionState state: RTCIceConnectionState) {
+        let text: String
+        switch state {
+            case .connected, .completed:
+                text = "conectado"
+            case .disconnected:
+                text = "desconectado"
+            case .failed, .closed:
+                text = "falhou"
+            case .new, .checking, .count:
+                text = "novo"
+            default:
+                text = "error"
+        }
+        print(text)
+    }
+}
+
+

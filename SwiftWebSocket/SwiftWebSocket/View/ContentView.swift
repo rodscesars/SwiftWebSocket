@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @ObservedObject var viewModel = WebSocketViewModel()
+    @ObservedObject var viewModel = ViewModel()
     let url = URL(string: "wss://galene.org:8443/ws")!
 
     var body: some View {
