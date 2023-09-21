@@ -20,20 +20,34 @@ class ViewModel: ObservableObject {
     @Published var password: String = ""
     @Published var id: String = UUID().uuidString
     @Published var streamId: String = UUID().uuidString
+    @Published var text: String = ""
+
+    @Published var hasRemoteSdp: Bool = false
+    @Published var remoteCandidate: Bool = false
+
+    @Published var cameraPermissionGranted = false
+    @Published var microphonePermissionGranted = false
 
     @Published var speakerOn: Bool = false
     @Published var mute: Bool = false
 
+    fileprivate let defaultIceServers = ["stun:stun.l.google.com:19302",
+                                         "stun:stun1.l.google.com:19302",
+                                         "stun:stun2.l.google.com:19302",
+                                         "stun:stun3.l.google.com:19302",
+                                         "stun:stun4.l.google.com:19302"]
+
 
     init() {
         webSocketManager = WebSocketManager()
-        webRTC = WebRTCClient(iceServers: [])
+        webRTC = WebRTCClient(iceServers: defaultIceServers)
         webSocketManager?.delegate = self
         webRTC?.delegate = self
     }
 
     func joinRoom() {
         webSocketManager?.joinRoom(username: username, password: password)
+        webSocketManager?.sendRequest()
     }
 
     func sendMessage(message: String) {
@@ -153,15 +167,37 @@ extension ViewModel: WebSocketConnectionDelegate {
                 print("Decoding error: \(error)")
             }
 
-        case "answer":
+        case "offer":
+            if let sourceId = jsonObject["source"] as? String, sourceId != id {
+                if let sdpString = jsonObject["sdp"] as? String {
+                    let sdp = RTCSessionDescription(type: .offer, sdp: sdpString)
 
-        case: "ice":
-            
+                    DispatchQueue.main.async { [weak self] in
+                        self?.webRTC?.set(remoteSdp: sdp) { (error) in
+                            print("Received remote sdp")
+                        }
+                    }
+                }
+            }
+
+        case "ice":
+            if let candidateData = jsonObject["candidate"] as? [String: Any],
+               let candidate = candidateData["candidate"] as? String,
+               let sdpMLineIndex = candidateData["sdpMLineIndex"] as? Int32,
+               let sdpMid = candidateData["sdpMid"] as? String {
+
+                let iceCandidate = RTCIceCandidate(sdp: candidate, sdpMLineIndex: sdpMLineIndex, sdpMid: sdpMid)
+                
+                DispatchQueue.main.async { [weak self] in
+                    self?.webRTC?.set(remoteCandidate: iceCandidate) { error in
+                        print("Received remote candidate")
+                    }
+                }
+            }
+
         default:
             break
         }
-
-
     }
 
     func onMessage(connection: WebSocketConnection, data: Data) {
@@ -176,7 +212,6 @@ extension ViewModel: WebRTCClientDelegate {
     }
 
     func webRTCClient(_ client: WebRTCClient, didChangeConnectionState state: RTCIceConnectionState) {
-        let text: String
         switch state {
             case .connected, .completed:
                 text = "conectado"
@@ -189,7 +224,6 @@ extension ViewModel: WebRTCClientDelegate {
             default:
                 text = "error"
         }
-        print(text)
     }
 }
 

@@ -71,6 +71,16 @@ class WebSocketManager: NSObject, WebSocketConnection {
         }
     }
 
+    func sendRequest() {
+        let requestData: [String: Any] = ["type":"request","request": ["":["audio","video"]]]
+
+        let requestJson = try? JSONSerialization.data(withJSONObject: requestData)
+
+        if let data = requestJson {
+            self.send(data: data)
+        }
+    }
+
     func ping() {
         let pongData: [String: Any] = ["type":"pong"]
 

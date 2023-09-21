@@ -6,6 +6,8 @@
 //
 
 import SwiftUI
+import AVFoundation
+import WebRTC
 
 struct ContentView: View {
     @ObservedObject var viewModel = ViewModel()
@@ -24,6 +26,16 @@ struct ContentView: View {
                     viewModel.joinRoom()
                     viewModel.conected = true
                 }.padding()
+
+                Toggle("Permissão de câmera", isOn: $viewModel.cameraPermissionGranted)
+                    .padding()
+
+                Toggle("Permissão de microfone", isOn: $viewModel.microphonePermissionGranted)
+                    .padding()
+            }
+            .onAppear {
+                checkCameraPermission()
+                checkMicrophonePermission()
             }
             .padding()
             .navigationDestination(isPresented: $viewModel.conected) {
@@ -31,5 +43,37 @@ struct ContentView: View {
             }
         }
 
+    }
+
+    private func checkCameraPermission() {
+        AVCaptureDevice.requestAccess(for: .video) { granted in
+            DispatchQueue.main.async {
+                viewModel.cameraPermissionGranted = granted
+            }
+        }
+    }
+
+    private func checkMicrophonePermission() {
+        AVCaptureDevice.requestAccess(for: .audio) { granted in
+            DispatchQueue.main.async {
+                viewModel.microphonePermissionGranted = granted
+            }
+        }
+    }
+
+    private func requestCameraPermission() {
+        AVCaptureDevice.requestAccess(for: .video) { granted in
+            DispatchQueue.main.async {
+                viewModel.cameraPermissionGranted = granted
+            }
+        }
+    }
+
+    private func requestMicrophonePermission() {
+        AVCaptureDevice.requestAccess(for: .audio) { granted in
+            DispatchQueue.main.async {
+                viewModel.microphonePermissionGranted = granted
+            }
+        }
     }
 }
