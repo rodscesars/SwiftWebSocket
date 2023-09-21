@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import WebRTC
 
 protocol WebSocketConnection {
     func send(text: String)
@@ -84,6 +85,42 @@ class WebSocketManager: NSObject, WebSocketConnection {
         let messageData: [String: Any] = ["type":"chat","source": id,"dest":"","username": username,"kind":"","value": message]
 
         let messageJson = try? JSONSerialization.data(withJSONObject: messageData)
+
+        if let data = messageJson {
+            self.send(data: data)
+        }
+    }
+
+    func sendSdp(sdp: RTCSessionDescription, id: String, username: String, streamId: String) {
+
+        let offerData: [String: Any?] = [    "type": "offer",
+                                             "kind": "",
+                                             "id": streamId,
+                                             "label": "camera",
+                                             "replace": nil,
+                                             "source": id,
+                                             "username": username,
+                                             "sdp": sdp]
+
+        let messageJson = try? JSONSerialization.data(withJSONObject: offerData)
+
+        if let data = messageJson {
+            self.send(data: data)
+        }
+    }
+
+    func sendIce(candidate: RTCIceCandidate, streamId: String){
+
+        let iceData: [String: Any?] = ["type":"ice",
+                                      "id": streamId,
+                                      "candidate":
+                                        ["candidate": candidate.sdp,
+                                         "sdpMid": candidate.sdpMid,
+                                         "sdpMLineIndex": candidate.sdpMLineIndex,
+                                         "usernameFragment": candidate.description] as [String : Any?]
+        ]
+
+        let messageJson = try? JSONSerialization.data(withJSONObject: iceData)
 
         if let data = messageJson {
             self.send(data: data)

@@ -14,6 +14,7 @@ protocol WebRTCClientDelegate: AnyObject {
 }
 
 final class WebRTCClient: NSObject {
+    weak var delegate: WebRTCClientDelegate?
 
     private static let factory: RTCPeerConnectionFactory = {
         RTCInitializeSSL()
@@ -21,8 +22,6 @@ final class WebRTCClient: NSObject {
         let videoDecoderFactory = RTCDefaultVideoDecoderFactory()
         return RTCPeerConnectionFactory(encoderFactory: videoEncoderFactory, decoderFactory: videoDecoderFactory)
     }()
-
-    weak var delegate: WebRTCClientDelegate?
     private let peerConnection: RTCPeerConnection
     private let rtcAudioSession =  RTCAudioSession.sharedInstance()
     private let audioQueue = DispatchQueue(label: "audio")

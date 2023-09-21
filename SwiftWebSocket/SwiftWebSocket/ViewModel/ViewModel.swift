@@ -19,6 +19,11 @@ class ViewModel: ObservableObject {
     @Published var username: String = ""
     @Published var password: String = ""
     @Published var id: String = UUID().uuidString
+    @Published var streamId: String = UUID().uuidString
+
+    @Published var speakerOn: Bool = false
+    @Published var mute: Bool = false
+
 
     init() {
         webSocketManager = WebSocketManager()
@@ -35,13 +40,41 @@ class ViewModel: ObservableObject {
         webSocketManager?.sendMessage(username: username, message: message, id: id)
     }
 
-    func sendOffer() {
-        
+    func sendSession() {
+        webRTC?.offer { (sdp) in
+            self.webSocketManager?.sendSdp(sdp: sdp, id: self.id, username: self.username, streamId: self.id)
+        }
     }
 
-//    func sendIce(candidate: RTCIceCandidate) {
-//        self.webSocketManager.localIceCandidate(candidate)
-//    }
+    func answerSession() {
+        webRTC?.answer { (sdp) in
+            self.webSocketManager?.sendSdp(sdp: sdp, id: self.id, username: self.username, streamId: self.streamId)
+        }
+    }
+
+    func speaker() {
+        if self.speakerOn {
+            self.webRTC?.speakerOff()
+        }
+        else {
+            self.webRTC?.speakerOn()
+        }
+        self.speakerOn = !self.speakerOn
+    }
+
+    func muteOn() {
+        self.mute = !self.mute
+        if self.mute {
+            self.webRTC?.muteAudio()
+        }
+        else {
+            self.webRTC?.unmuteAudio()
+        }
+    }
+
+    func sendIce(candidate: RTCIceCandidate, streamId: String) {
+        self.webSocketManager?.sendIce(candidate: candidate, streamId: streamId)
+    }
 }
 
 extension ViewModel: WebSocketConnectionDelegate {
@@ -94,7 +127,6 @@ extension ViewModel: WebSocketConnectionDelegate {
                 }
             }
 
-
         case "chathistory":
             let decoder = JSONDecoder()
             decoder.keyDecodingStrategy = .convertFromSnakeCase
@@ -107,6 +139,7 @@ extension ViewModel: WebSocketConnectionDelegate {
             } catch {
                 print("Decoding error: \(error)")
             }
+
         case "chat":
             let decoder = JSONDecoder()
             decoder.keyDecodingStrategy = .convertFromSnakeCase
@@ -119,6 +152,11 @@ extension ViewModel: WebSocketConnectionDelegate {
             } catch {
                 print("Decoding error: \(error)")
             }
+
+        case "answer":
+
+        case: "ice":
+            
         default:
             break
         }
@@ -134,7 +172,7 @@ extension ViewModel: WebSocketConnectionDelegate {
 extension ViewModel: WebRTCClientDelegate {
     func webRTCClient(_ client: WebRTCClient, didDiscoverLocalCandidate candidate: RTCIceCandidate) {
         print("discovered local candidate")
-//        self.sendIce(candidate)
+        self.sendIce(candidate: candidate, streamId: self.streamId)
     }
 
     func webRTCClient(_ client: WebRTCClient, didChangeConnectionState state: RTCIceConnectionState) {
