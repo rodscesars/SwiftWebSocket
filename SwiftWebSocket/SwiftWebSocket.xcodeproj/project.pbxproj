@@ -34,7 +34,6 @@
 		B17B70D12AA949FB00212E3F /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		B17B70D32AA94A1E00212E3F /* ViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModel.swift; sourceTree = "<group>"; };
 		B17B70D82AA94B0000212E3F /* WebSocketManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebSocketManager.swift; sourceTree = "<group>"; };
-		B1E030BE2ABCC83F00E22244 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -68,7 +67,6 @@
 		B17B70BB2AA9493000212E3F /* SwiftWebSocket */ = {
 			isa = PBXGroup;
 			children = (
-				B1E030BE2ABCC83F00E22244 /* Info.plist */,
 				B17B70BC2AA9493000212E3F /* SwiftWebSocketApp.swift */,
 				B17B70D52AA94A3700212E3F /* Manager */,
 				B17B70CA2AA9496700212E3F /* ViewModel */,
