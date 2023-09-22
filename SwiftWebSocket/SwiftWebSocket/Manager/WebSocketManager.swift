@@ -101,7 +101,7 @@ class WebSocketManager: NSObject, WebSocketConnection {
         }
     }
 
-    func sendSdp(sdp: RTCSessionDescription, id: String, username: String, streamId: String) {
+    func sendOffer(sdp: RTCSessionDescription, id: String, username: String, streamId: String) {
 
         let offerData: [String: Any?] = [    "type": "offer",
                                              "kind": "",
@@ -110,9 +110,22 @@ class WebSocketManager: NSObject, WebSocketConnection {
                                              "replace": nil,
                                              "source": id,
                                              "username": username,
-                                             "sdp": sdp]
+                                             "sdp": sdp.sdp]
 
         let messageJson = try? JSONSerialization.data(withJSONObject: offerData)
+
+        if let data = messageJson {
+            self.send(data: data)
+        }
+    }
+
+    func sendAnswer(sdp: RTCSessionDescription, streamId: String) {
+
+        let answerData: [String: Any?] = [    "type": "answer",
+                                              "id": streamId,
+                                              "sdp": sdp.sdp]
+
+        let messageJson = try? JSONSerialization.data(withJSONObject: answerData)
 
         if let data = messageJson {
             self.send(data: data)
@@ -122,8 +135,8 @@ class WebSocketManager: NSObject, WebSocketConnection {
     func sendIce(candidate: RTCIceCandidate, streamId: String){
 
         let iceData: [String: Any?] = ["type":"ice",
-                                      "id": streamId,
-                                      "candidate":
+                                       "id": streamId,
+                                       "candidate":
                                         ["candidate": candidate.sdp,
                                          "sdpMid": candidate.sdpMid,
                                          "sdpMLineIndex": candidate.sdpMLineIndex,

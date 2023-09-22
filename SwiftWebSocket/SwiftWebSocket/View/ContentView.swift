@@ -27,15 +27,17 @@ struct ContentView: View {
                     viewModel.conected = true
                 }.padding()
 
-                Toggle("Permissão de câmera", isOn: $viewModel.cameraPermissionGranted)
-                    .padding()
+                Button("Permissão de câmera") {
+                    requestCameraPermission()
+                }.disabled(viewModel.cameraPermissionGranted)
 
-                Toggle("Permissão de microfone", isOn: $viewModel.microphonePermissionGranted)
-                    .padding()
+                Button("Permissão de microfone") {
+                    requestMicrophonePermission()
+                }.disabled(viewModel.microphonePermissionGranted)
             }
             .onAppear {
-                checkCameraPermission()
-                checkMicrophonePermission()
+                requestCameraPermission()
+                requestMicrophonePermission()
             }
             .padding()
             .navigationDestination(isPresented: $viewModel.conected) {
@@ -43,22 +45,6 @@ struct ContentView: View {
             }
         }
 
-    }
-
-    private func checkCameraPermission() {
-        AVCaptureDevice.requestAccess(for: .video) { granted in
-            DispatchQueue.main.async {
-                viewModel.cameraPermissionGranted = granted
-            }
-        }
-    }
-
-    private func checkMicrophonePermission() {
-        AVCaptureDevice.requestAccess(for: .audio) { granted in
-            DispatchQueue.main.async {
-                viewModel.microphonePermissionGranted = granted
-            }
-        }
     }
 
     private func requestCameraPermission() {

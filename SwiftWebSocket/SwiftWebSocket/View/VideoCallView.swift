@@ -38,13 +38,6 @@ struct VideoCallView: View {
                     }.disabled(true)
 
                     Button(action: {
-                        viewModel.answerSession()
-                    }) {
-                        Image(systemName: "arrow.left.circle.fill")
-                            .font(.system(size: 10))
-                    }
-
-                    Button(action: {
                         viewModel.speaker()
                     }) {
                         Image(systemName: viewModel.speakerOn ? "speaker.fill" : "speaker.slash.fill")
@@ -60,7 +53,6 @@ struct VideoCallView: View {
                 }
             }
         }
-        .navigationTitle(viewModel.text)
     }
 }
 

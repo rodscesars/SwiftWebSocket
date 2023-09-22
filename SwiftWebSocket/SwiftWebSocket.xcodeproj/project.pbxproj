@@ -342,7 +342,6 @@
 				DEVELOPMENT_TEAM = DUY76YA587;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = SwiftWebSocket/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Esta aplicação precisa de acesso à câmera para realizar chamadas de vídeo.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Esta aplicação precisa de acesso ao microfone para transmitir áudio durante chamadas de vídeo.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;

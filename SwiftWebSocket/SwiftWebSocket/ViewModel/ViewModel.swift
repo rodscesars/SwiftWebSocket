@@ -20,7 +20,6 @@ class ViewModel: ObservableObject {
     @Published var password: String = ""
     @Published var id: String = UUID().uuidString
     @Published var streamId: String = UUID().uuidString
-    @Published var text: String = ""
 
     @Published var hasRemoteSdp: Bool = false
     @Published var remoteCandidate: Bool = false
@@ -56,14 +55,18 @@ class ViewModel: ObservableObject {
 
     func sendSession() {
         webRTC?.offer { (sdp) in
-            self.webSocketManager?.sendSdp(sdp: sdp, id: self.id, username: self.username, streamId: self.id)
+            self.webSocketManager?.sendOffer(sdp: sdp, id: self.id, username: self.username, streamId: self.id)
         }
     }
 
-    func answerSession() {
+    func answerSession(streamId: String) {
         webRTC?.answer { (sdp) in
-            self.webSocketManager?.sendSdp(sdp: sdp, id: self.id, username: self.username, streamId: self.streamId)
+            self.webSocketManager?.sendAnswer(sdp: sdp, streamId: streamId)
         }
+    }
+
+    func sendIce(candidate: RTCIceCandidate, streamId: String) {
+        self.webSocketManager?.sendIce(candidate: candidate, streamId: streamId)
     }
 
     func speaker() {
@@ -84,10 +87,6 @@ class ViewModel: ObservableObject {
         else {
             self.webRTC?.unmuteAudio()
         }
-    }
-
-    func sendIce(candidate: RTCIceCandidate, streamId: String) {
-        self.webSocketManager?.sendIce(candidate: candidate, streamId: streamId)
     }
 }
 
@@ -168,7 +167,7 @@ extension ViewModel: WebSocketConnectionDelegate {
             }
 
         case "offer":
-            if let sourceId = jsonObject["source"] as? String, sourceId != id {
+            if let id = jsonObject["id"] as? String {
                 if let sdpString = jsonObject["sdp"] as? String {
                     let sdp = RTCSessionDescription(type: .offer, sdp: sdpString)
 
@@ -176,12 +175,14 @@ extension ViewModel: WebSocketConnectionDelegate {
                         self?.webRTC?.set(remoteSdp: sdp) { (error) in
                             print("Received remote sdp")
                         }
+                        self?.answerSession(streamId: id)
                     }
                 }
             }
 
         case "ice":
             if let candidateData = jsonObject["candidate"] as? [String: Any],
+               let streamId = jsonObject["id"] as? String,
                let candidate = candidateData["candidate"] as? String,
                let sdpMLineIndex = candidateData["sdpMLineIndex"] as? Int32,
                let sdpMid = candidateData["sdpMid"] as? String {
@@ -192,6 +193,7 @@ extension ViewModel: WebSocketConnectionDelegate {
                     self?.webRTC?.set(remoteCandidate: iceCandidate) { error in
                         print("Received remote candidate")
                     }
+                    self?.sendIce(candidate: iceCandidate, streamId: streamId)
                 }
             }
 
@@ -209,21 +211,6 @@ extension ViewModel: WebRTCClientDelegate {
     func webRTCClient(_ client: WebRTCClient, didDiscoverLocalCandidate candidate: RTCIceCandidate) {
         print("discovered local candidate")
         self.sendIce(candidate: candidate, streamId: self.streamId)
-    }
-
-    func webRTCClient(_ client: WebRTCClient, didChangeConnectionState state: RTCIceConnectionState) {
-        switch state {
-            case .connected, .completed:
-                text = "conectado"
-            case .disconnected:
-                text = "desconectado"
-            case .failed, .closed:
-                text = "falhou"
-            case .new, .checking, .count:
-                text = "novo"
-            default:
-                text = "error"
-        }
     }
 }
 
