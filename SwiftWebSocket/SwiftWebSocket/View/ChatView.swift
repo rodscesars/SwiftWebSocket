@@ -49,8 +49,16 @@ struct ChatView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-
                 HStack {
+                    Button {
+                        viewModel.webSocketManager?.disconnect()
+                        viewModel.messages = []
+                        viewModel.users = []
+                        dismiss()
+                    } label: {
+                        Image(systemName: "phone.down")
+                    }
+
                     NavigationLink {
                         ParticipantsListView(users: viewModel.users)
                     } label: {
@@ -58,20 +66,34 @@ struct ChatView: View {
                     }
 
                     NavigationLink {
-                        VideoCallView(viewModel: viewModel)
+                        VideoViewControllerWrapper(webRTCClient: viewModel.webRTC!)
                     } label: {
                         Image(systemName: "video.fill")
                     }
                 }
             }
             ToolbarItem(placement: .navigationBarLeading) {
-                Button {
-                    viewModel.webSocketManager?.disconnect()
-                    viewModel.messages = []
-                    viewModel.users = []
-                    dismiss()
-                } label: {
-                    Image(systemName: "phone.down")
+                HStack {
+                    Button(action: {
+                        viewModel.sendSession()
+                    }) {
+                        Image(systemName: "arrow.right.circle.fill")
+                            .font(.system(size: 10))
+                    }
+
+                    Button(action: {
+                        viewModel.speaker()
+                    }) {
+                        Image(systemName: viewModel.speakerOn ? "speaker.fill" : "speaker.slash.fill")
+                            .font(.system(size: 10))
+                    }
+
+                    Button(action: {
+                        viewModel.muteOn()
+                    }) {
+                        Image(systemName: viewModel.mute ? "mic.slash.fill" : "mic.fill")
+                            .font(.system(size: 10))
+                    }
                 }
             }
         }

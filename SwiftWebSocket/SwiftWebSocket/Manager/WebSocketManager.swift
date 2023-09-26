@@ -101,14 +101,14 @@ class WebSocketManager: NSObject, WebSocketConnection {
         }
     }
 
-    func sendOffer(sdp: RTCSessionDescription, id: String, username: String, streamId: String) {
+    func sendOffer(sdp: RTCSessionDescription, userId: String, username: String, streamId: String) {
 
         let offerData: [String: Any?] = [    "type": "offer",
                                              "kind": "",
                                              "id": streamId,
                                              "label": "camera",
                                              "replace": nil,
-                                             "source": id,
+                                             "source": userId,
                                              "username": username,
                                              "sdp": sdp.sdp]
 

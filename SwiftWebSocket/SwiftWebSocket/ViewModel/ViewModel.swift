@@ -30,6 +30,9 @@ class ViewModel: ObservableObject {
     @Published var speakerOn: Bool = false
     @Published var mute: Bool = false
 
+//    @Published var remoteVideoTrack: RTCVideoTrack?
+//    @Published var refreshRemoteVideoTrack: Bool = false
+
     fileprivate let defaultIceServers = ["stun:stun.l.google.com:19302",
                                          "stun:stun1.l.google.com:19302",
                                          "stun:stun2.l.google.com:19302",
@@ -45,6 +48,8 @@ class ViewModel: ObservableObject {
     }
 
     func joinRoom() {
+//        self.remoteVideoTrack = webRTC?.remoteVideoTrack
+//        refreshRemoteVideoTrack = true
         webSocketManager?.joinRoom(username: username, password: password)
         webSocketManager?.sendRequest()
     }
@@ -55,7 +60,7 @@ class ViewModel: ObservableObject {
 
     func sendSession() {
         webRTC?.offer { (sdp) in
-            self.webSocketManager?.sendOffer(sdp: sdp, id: self.id, username: self.username, streamId: self.id)
+            self.webSocketManager?.sendOffer(sdp: sdp, userId: self.id, username: self.username, streamId: self.streamId)
         }
     }
 
@@ -122,10 +127,10 @@ extension ViewModel: WebSocketConnectionDelegate {
             let decoder = JSONDecoder()
             decoder.keyDecodingStrategy = .convertFromSnakeCase
 
-            if let kind = jsonObject["kind"] as? String, kind == "delete", let username = jsonObject["username"] {
+            if let kind = jsonObject["kind"] as? String, kind == "delete", let id = jsonObject["id"] {
                 DispatchQueue.main.async { [weak self] in
                     self?.users.removeAll(where: { user in
-                        return user.username == username as! String
+                        return user.id == id as! String
                     })
                 }
             } else {
@@ -166,6 +171,7 @@ extension ViewModel: WebSocketConnectionDelegate {
                 print("Decoding error: \(error)")
             }
 
+
         case "offer":
             if let id = jsonObject["id"] as? String {
                 if let sdpString = jsonObject["sdp"] as? String {
@@ -180,6 +186,19 @@ extension ViewModel: WebSocketConnectionDelegate {
                 }
             }
 
+
+        case "answer":
+             if let sdpString = jsonObject["sdp"] as? String {
+
+                let sdp = RTCSessionDescription(type: .offer, sdp: sdpString)
+
+                DispatchQueue.main.async { [weak self] in
+                    self?.webRTC?.set(remoteSdp: sdp ) { error in
+                        print("Received remote candidate")
+                    }
+                }
+            }
+            
         case "ice":
             if let candidateData = jsonObject["candidate"] as? [String: Any],
                let streamId = jsonObject["id"] as? String,

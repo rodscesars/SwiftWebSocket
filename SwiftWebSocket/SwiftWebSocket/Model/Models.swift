@@ -14,6 +14,6 @@ struct ChatMessage: Decodable, Hashable {
 }
 
 struct User: Decodable, Hashable {
-//    let id: String
+    let id: String
     let username: String
 }
