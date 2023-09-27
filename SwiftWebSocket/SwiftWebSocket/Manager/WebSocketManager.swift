@@ -150,6 +150,20 @@ class WebSocketManager: NSObject, WebSocketConnection {
         }
     }
 
+    func negotiate(streamId: String){
+
+        let negotiateData: [String: Any] = ["type": "requestStream",
+                                       "id": streamId,
+                                       "request": ["audio", "video"]
+    ]
+
+        let messageJson = try? JSONSerialization.data(withJSONObject: negotiateData)
+
+        if let data = messageJson {
+            self.send(data: data)
+        }
+    }
+
     func listen()  {
         webSocketTask.receive { result in
             switch result {

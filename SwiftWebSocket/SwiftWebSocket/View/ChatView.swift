@@ -66,7 +66,7 @@ struct ChatView: View {
                     }
 
                     NavigationLink {
-                        VideoViewControllerWrapper(webRTCClient: viewModel.webRTC!)
+                        VideoViewControllerWrapper(webRTCClient: viewModel.webRTC)
                     } label: {
                         Image(systemName: "video.fill")
                     }

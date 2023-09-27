@@ -30,26 +30,22 @@ class ViewModel: ObservableObject {
     @Published var speakerOn: Bool = false
     @Published var mute: Bool = false
 
-//    @Published var remoteVideoTrack: RTCVideoTrack?
-//    @Published var refreshRemoteVideoTrack: Bool = false
+//    fileprivate let defaultIceServers = ["stun:stun.l.google.com:19302",
+//                                         "stun:stun1.l.google.com:19302",
+//                                         "stun:stun2.l.google.com:19302",
+//                                         "stun:stun3.l.google.com:19302",
+//                                         "stun:stun4.l.google.com:19302"]
 
-    fileprivate let defaultIceServers = ["stun:stun.l.google.com:19302",
-                                         "stun:stun1.l.google.com:19302",
-                                         "stun:stun2.l.google.com:19302",
-                                         "stun:stun3.l.google.com:19302",
-                                         "stun:stun4.l.google.com:19302"]
-
+//    var defaultIceServers: [RTCIceServer] = []
 
     init() {
         webSocketManager = WebSocketManager()
-        webRTC = WebRTCClient(iceServers: defaultIceServers)
         webSocketManager?.delegate = self
-        webRTC?.delegate = self
+//        webRTC = WebRTCClient(iceServers: defaultIceServers)
+//        webRTC?.delegate = self
     }
 
     func joinRoom() {
-//        self.remoteVideoTrack = webRTC?.remoteVideoTrack
-//        refreshRemoteVideoTrack = true
         webSocketManager?.joinRoom(username: username, password: password)
         webSocketManager?.sendRequest()
     }
@@ -122,6 +118,28 @@ extension ViewModel: WebSocketConnectionDelegate {
         switch type {
         case "ping":
             webSocketManager?.ping()
+
+        case "joined":
+            if let rtcConfiguration = jsonObject["rtcConfiguration"] as? [String: Any],
+               let iceServers = rtcConfiguration["iceServers"] as? [[String: Any]] {
+
+               var iceServerList: [RTCIceServer] = []
+
+               for iceServerInfo in iceServers {
+                   if let urls = iceServerInfo["urls"] as? [String],
+                      let username = iceServerInfo["username"] as? String,
+                      let credential = iceServerInfo["credential"] as? String {
+
+                       let iceServer = RTCIceServer(urlStrings: urls, username: username, credential: credential)
+                       iceServerList.append(iceServer)
+                   }
+               }
+                DispatchQueue.main.async { [weak self] in
+                    self?.webRTC = WebRTCClient(iceServers: iceServerList)
+                    self?.webRTC?.delegate = self
+                }
+
+            }
 
         case "user":
             let decoder = JSONDecoder()
@@ -214,6 +232,14 @@ extension ViewModel: WebSocketConnectionDelegate {
                     }
                     self?.sendIce(candidate: iceCandidate, streamId: streamId)
                 }
+            }
+
+        case "renegotiate":
+            if let streamId = jsonObject["id"] as? String {
+                DispatchQueue.main.async { [weak self] in
+                    self?.webSocketManager?.negotiate(streamId: streamId)
+                }
+
             }
 
         default:

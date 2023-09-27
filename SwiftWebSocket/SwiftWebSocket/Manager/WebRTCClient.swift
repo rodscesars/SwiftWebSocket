@@ -31,9 +31,9 @@ final class WebRTCClient: NSObject {
     var remoteVideoTrack: RTCVideoTrack?
     private var localDataChannel: RTCDataChannel?
 
-    required init(iceServers: [String]) {
+    required init(iceServers: [RTCIceServer]) {
         let config = RTCConfiguration()
-        config.iceServers = [RTCIceServer(urlStrings: iceServers)]
+        config.iceServers = iceServers
 
         config.sdpSemantics = .unifiedPlan
 

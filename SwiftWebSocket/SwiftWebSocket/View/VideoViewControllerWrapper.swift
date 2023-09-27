@@ -9,10 +9,10 @@ import SwiftUI
 import UIKit
 
 struct VideoViewControllerWrapper: UIViewControllerRepresentable {
-    let webRTCClient: WebRTCClient
+    let webRTCClient: WebRTCClient?
 
     func makeUIViewController(context: Context) -> VideoViewController {
-        return VideoViewController(webRTCClient: webRTCClient)
+        return VideoViewController(webRTCClient: webRTCClient ?? WebRTCClient(iceServers: []))
     }
 
     func updateUIViewController(_ uiViewController: VideoViewController, context: Context) {}
