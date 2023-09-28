@@ -72,7 +72,7 @@ class WebSocketManager: NSObject, WebSocketConnection {
     }
 
     func sendRequest() {
-        let requestData: [String: Any] = ["type":"request","request": ["":["audio","video"]]]
+        let requestData: [String: Any] = ["type":"request","request": ["camera":["audio","video"]]]
 
         let requestJson = try? JSONSerialization.data(withJSONObject: requestData)
 

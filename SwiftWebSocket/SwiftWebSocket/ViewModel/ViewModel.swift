@@ -146,7 +146,7 @@ extension ViewModel: WebSocketConnectionDelegate {
             decoder.keyDecodingStrategy = .convertFromSnakeCase
 
             if let kind = jsonObject["kind"] as? String, kind == "delete", let id = jsonObject["id"] {
-                DispatchQueue.main.async { [weak self] in
+                            DispatchQueue.main.async { [weak self] in
                     self?.users.removeAll(where: { user in
                         return user.id == id as! String
                     })
@@ -208,11 +208,11 @@ extension ViewModel: WebSocketConnectionDelegate {
         case "answer":
              if let sdpString = jsonObject["sdp"] as? String {
 
-                let sdp = RTCSessionDescription(type: .offer, sdp: sdpString)
+                 let sdp = RTCSessionDescription(type: .answer, sdp: sdpString)
 
                 DispatchQueue.main.async { [weak self] in
                     self?.webRTC?.set(remoteSdp: sdp ) { error in
-                        print("Received remote candidate")
+                        print("Received remote sdp")
                     }
                 }
             }
