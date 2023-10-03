@@ -10,6 +10,8 @@ import WebRTC
 
 protocol WebRTCClientDelegate: AnyObject {
     func webRTCClient(_ client: WebRTCClient, didDiscoverLocalCandidate candidate: RTCIceCandidate)
+    func webRTCClient(_ client: WebRTCClient, didRemoveRemoteVideoTrack track: RTCVideoTrack)
+    func webRTCClient(_ client: WebRTCClient, didAddRemoteVideoTrack track: RTCVideoTrack)
 }
 
 final class WebRTCClient: NSObject {
@@ -28,8 +30,9 @@ final class WebRTCClient: NSObject {
                                    kRTCMediaConstraintsOfferToReceiveVideo: kRTCMediaConstraintsValueTrue]
     private var videoCapturer: RTCVideoCapturer?
     var localVideoTrack: RTCVideoTrack?
-    var remoteVideoTrack: RTCVideoTrack?
-    private var localDataChannel: RTCDataChannel?
+
+//    var remoteVideoTrack: RTCVideoTrack?
+    var remoteVideoTracks: [RTCVideoTrack] = []
 
     required init(iceServers: [RTCIceServer]) {
         let config = RTCConfiguration()
@@ -91,7 +94,7 @@ final class WebRTCClient: NSObject {
     }
 
     // MARK: Media
-    func startCaptureLocalVideo(renderer: RTCVideoRenderer) {
+    func startCaptureLocalVideo() {
         guard let capturer = self.videoCapturer as? RTCCameraVideoCapturer else {
             return
         }
@@ -113,12 +116,20 @@ final class WebRTCClient: NSObject {
                               format: format,
                               fps: Int(fps.maxFrameRate))
 
-        self.localVideoTrack?.add(renderer)
+//        self.localVideoTrack?.add(renderer)
     }
 
-    func renderRemoteVideo(to renderer: RTCVideoRenderer) {
-        self.remoteVideoTrack?.add(renderer)
-    }
+//    func renderRemoteVideo(to renderer: RTCVideoRenderer) {
+//        self.remoteVideoTrack?.add(renderer)
+//    }
+
+//    func renderRemoteVideo(to renderers: [RTCVideoRenderer]) {
+//        for (index, videoTrack) in remoteVideoTracks.enumerated() {
+//            if index < renderers.count {
+//                videoTrack.add(renderers[index])
+//            }
+//        }
+//    }
 
     private func configureAudioSession() {
         self.rtcAudioSession.lockForConfiguration()
@@ -142,7 +153,7 @@ final class WebRTCClient: NSObject {
         let videoTrack = self.createVideoTrack()
         self.localVideoTrack = videoTrack
         self.peerConnection.add(videoTrack, streamIds: [streamId])
-        self.remoteVideoTrack = self.peerConnection.transceivers.first { $0.mediaType == .video }?.receiver.track as? RTCVideoTrack
+//        self.remoteVideoTrack = self.peerConnection.transceivers.first { $0.mediaType == .video }?.receiver.track as? RTCVideoTrack
     }
 
     private func createAudioTrack() -> RTCAudioTrack {
@@ -167,17 +178,27 @@ final class WebRTCClient: NSObject {
 }
 
 extension WebRTCClient: RTCPeerConnectionDelegate {
-
     func peerConnection(_ peerConnection: RTCPeerConnection, didChange stateChanged: RTCSignalingState) {
         debugPrint("peerConnection new signaling state: \(stateChanged)")
     }
 
     func peerConnection(_ peerConnection: RTCPeerConnection, didAdd stream: RTCMediaStream) {
         debugPrint("peerConnection did add stream")
+
+        for videoTrack in stream.videoTracks {
+            remoteVideoTracks.append(videoTrack)
+            delegate?.webRTCClient(self, didAddRemoteVideoTrack: videoTrack)
+        }
     }
 
     func peerConnection(_ peerConnection: RTCPeerConnection, didRemove stream: RTCMediaStream) {
         debugPrint("peerConnection did remove stream")
+        for videoTrack in stream.videoTracks {
+            if let index = remoteVideoTracks.firstIndex(of: videoTrack) {
+                remoteVideoTracks.remove(at: index)
+                delegate?.webRTCClient(self, didRemoveRemoteVideoTrack: videoTrack)
+            }
+        }
     }
 
     func peerConnectionShouldNegotiate(_ peerConnection: RTCPeerConnection) {

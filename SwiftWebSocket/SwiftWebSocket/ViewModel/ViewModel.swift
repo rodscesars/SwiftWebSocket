@@ -21,14 +21,14 @@ class ViewModel: ObservableObject {
     @Published var id: String = UUID().uuidString
     @Published var streamId: String = UUID().uuidString
 
-    @Published var hasRemoteSdp: Bool = false
-    @Published var remoteCandidate: Bool = false
-
     @Published var cameraPermissionGranted = false
     @Published var microphonePermissionGranted = false
 
     @Published var speakerOn: Bool = false
     @Published var mute: Bool = false
+
+    @Published var remoteVideoTracks: [RTCVideoTrack] = []
+
 
 //    fileprivate let defaultIceServers = ["stun:stun.l.google.com:19302",
 //                                         "stun:stun1.l.google.com:19302",
@@ -89,6 +89,16 @@ class ViewModel: ObservableObject {
             self.webRTC?.unmuteAudio()
         }
     }
+
+    func addRemoteVideoTrack(_ track: RTCVideoTrack) {
+        remoteVideoTracks.append(track)
+    }
+
+    func removeRemoteVideoTrack(_ track: RTCVideoTrack) {
+        if let index = remoteVideoTracks.firstIndex(of: track) {
+            remoteVideoTracks.remove(at: index)
+        }
+    }
 }
 
 extension ViewModel: WebSocketConnectionDelegate {
@@ -99,8 +109,10 @@ extension ViewModel: WebSocketConnectionDelegate {
     func onDisconnected(connection: WebSocketConnection, error: Error?) {
         if let error = error {
             print("Disconnected with error:\(error)")
+            self.conected = false
         } else {
             print("Disconnected normally")
+            self.conected = false
         }
     }
 
@@ -256,6 +268,14 @@ extension ViewModel: WebRTCClientDelegate {
     func webRTCClient(_ client: WebRTCClient, didDiscoverLocalCandidate candidate: RTCIceCandidate) {
         print("discovered local candidate")
         self.sendIce(candidate: candidate, streamId: self.streamId)
+    }
+
+    func webRTCClient(_ client: WebRTCClient, didAddRemoteVideoTrack track: RTCVideoTrack) {
+        addRemoteVideoTrack(track)
+    }
+
+    func webRTCClient(_ client: WebRTCClient, didRemoveRemoteVideoTrack track: RTCVideoTrack) {
+        removeRemoteVideoTrack(track)
     }
 }
 
