@@ -66,34 +66,9 @@ struct ChatView: View {
                     }
 
                     NavigationLink {
-//                        VideoViewControllerWrapper(webRTCClient: viewModel.webRTC)
                         VideoCallView(viewModel: viewModel)
                     } label: {
-                        Image(systemName: "video.fill")
-                    }
-                }
-            }
-            ToolbarItem(placement: .navigationBarLeading) {
-                HStack {
-                    Button(action: {
-                        viewModel.sendSession()
-                    }) {
-                        Image(systemName: "arrow.right.circle.fill")
-                            .font(.system(size: 15))
-                    }
-
-                    Button(action: {
-                        viewModel.speaker()
-                    }) {
-                        Image(systemName: viewModel.speakerOn ? "speaker.fill" : "speaker.slash.fill")
-                            .font(.system(size: 15))
-                    }
-
-                    Button(action: {
-                        viewModel.muteOn()
-                    }) {
-                        Image(systemName: viewModel.mute ? "mic.slash.fill" : "mic.fill")
-                            .font(.system(size: 15))
+                        Image(systemName: "phone.bubble.left.fill")
                     }
                 }
             }

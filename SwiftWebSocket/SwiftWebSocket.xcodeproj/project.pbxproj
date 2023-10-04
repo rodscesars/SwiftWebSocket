@@ -19,9 +19,6 @@
 		B17B70D22AA949FB00212E3F /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = B17B70D12AA949FB00212E3F /* Models.swift */; };
 		B17B70D42AA94A1E00212E3F /* ViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B17B70D32AA94A1E00212E3F /* ViewModel.swift */; };
 		B17B70D92AA94B0000212E3F /* WebSocketManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B17B70D82AA94B0000212E3F /* WebSocketManager.swift */; };
-		B1B89D302AC250CB007DBC12 /* VideoViewControllerWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1B89D2F2AC250CB007DBC12 /* VideoViewControllerWrapper.swift */; };
-		B1B89D342AC25574007DBC12 /* VideoViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = B1B89D322AC25574007DBC12 /* VideoViewController.xib */; };
-		B1B89D352AC25574007DBC12 /* VideoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1B89D332AC25574007DBC12 /* VideoViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -37,9 +34,6 @@
 		B17B70D12AA949FB00212E3F /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		B17B70D32AA94A1E00212E3F /* ViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModel.swift; sourceTree = "<group>"; };
 		B17B70D82AA94B0000212E3F /* WebSocketManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebSocketManager.swift; sourceTree = "<group>"; };
-		B1B89D2F2AC250CB007DBC12 /* VideoViewControllerWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoViewControllerWrapper.swift; sourceTree = "<group>"; };
-		B1B89D322AC25574007DBC12 /* VideoViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = VideoViewController.xib; sourceTree = "<group>"; };
-		B1B89D332AC25574007DBC12 /* VideoViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -106,8 +100,6 @@
 				B17B70BE2AA9493000212E3F /* ContentView.swift */,
 				B17B70CD2AA9499300212E3F /* ChatView.swift */,
 				B150BF442ABB54B100233145 /* VideoCallView.swift */,
-				B1B89D312AC2555D007DBC12 /* VideoScreen */,
-				B1B89D2F2AC250CB007DBC12 /* VideoViewControllerWrapper.swift */,
 				B17B70CF2AA949B900212E3F /* ParticipantsListView.swift */,
 			);
 			path = View;
@@ -128,15 +120,6 @@
 				B150BF3D2ABB2C9800233145 /* WebRTCClient.swift */,
 			);
 			path = Manager;
-			sourceTree = "<group>";
-		};
-		B1B89D312AC2555D007DBC12 /* VideoScreen */ = {
-			isa = PBXGroup;
-			children = (
-				B1B89D332AC25574007DBC12 /* VideoViewController.swift */,
-				B1B89D322AC25574007DBC12 /* VideoViewController.xib */,
-			);
-			path = VideoScreen;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -205,7 +188,6 @@
 			files = (
 				B17B70C42AA9493100212E3F /* Preview Assets.xcassets in Resources */,
 				B17B70C12AA9493100212E3F /* Assets.xcassets in Resources */,
-				B1B89D342AC25574007DBC12 /* VideoViewController.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -217,12 +199,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				B17B70D42AA94A1E00212E3F /* ViewModel.swift in Sources */,
-				B1B89D302AC250CB007DBC12 /* VideoViewControllerWrapper.swift in Sources */,
 				B17B70BF2AA9493000212E3F /* ContentView.swift in Sources */,
 				B150BF452ABB54B100233145 /* VideoCallView.swift in Sources */,
 				B17B70CE2AA9499300212E3F /* ChatView.swift in Sources */,
 				B150BF3E2ABB2C9800233145 /* WebRTCClient.swift in Sources */,
-				B1B89D352AC25574007DBC12 /* VideoViewController.swift in Sources */,
 				B17B70D02AA949B900212E3F /* ParticipantsListView.swift in Sources */,
 				B17B70BD2AA9493000212E3F /* SwiftWebSocketApp.swift in Sources */,
 				B17B70D22AA949FB00212E3F /* Models.swift in Sources */,

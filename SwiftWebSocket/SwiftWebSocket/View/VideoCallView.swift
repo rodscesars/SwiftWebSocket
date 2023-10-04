@@ -10,24 +10,55 @@ import WebRTC
 
 struct VideoCallView: View {
     @ObservedObject var viewModel: ViewModel
-    @State private var remoteVideoRenderers: [RTCVideoTrack] = []
 
     var body: some View {
         VStack(spacing: 10) {
             VideoView(videoTrack: viewModel.webRTC?.localVideoTrack).frame(width: 160, height: 160)
 
-            ForEach(viewModel.webRTC?.remoteVideoTracks ?? [RTCVideoTrack](), id: \.self) { track in
-                VideoView(videoTrack: track).frame(width: 160, height: 160)
+            ForEach(Array(viewModel.remoteVideoTracks.values), id: \.self) { value in
+                VideoView(videoTrack: value).frame(width: 160, height: 160)
             }
+
         }.onAppear {
             viewModel.webRTC?.startCaptureLocalVideo()
+        }.toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                HStack {
+                    Button(action: {
+                        viewModel.sendSession()
+                    }) {
+                        Image(systemName: "arrow.right.circle.fill")
+                            .font(.system(size: 15))
+                    }
+
+                    Button(action: {
+                        viewModel.speaker()
+                    }) {
+                        Image(systemName: viewModel.speakerOn ? "speaker.fill" : "speaker.slash.fill")
+                            .font(.system(size: 15))
+                    }
+
+                    Button(action: {
+                        viewModel.muteOn()
+                    }) {
+                        Image(systemName: viewModel.mute ? "mic.slash.fill" : "mic.fill")
+                            .font(.system(size: 15))
+                    }
+
+                    Button {
+                        viewModel.hideOn()
+                    } label: {
+                        Image(systemName: viewModel.hide ? "video.slash.fill" : "video.fill").font(.system(size: 15))
+                    }
+
+                }
+            }
         }
     }
 }
 
 struct VideoView: UIViewRepresentable {
     let videoTrack: RTCVideoTrack?
-    //    @Binding var refresh: Bool
 
     func makeUIView(context: Context) -> RTCMTLVideoView {
         let videoView = RTCMTLVideoView(frame: .zero)

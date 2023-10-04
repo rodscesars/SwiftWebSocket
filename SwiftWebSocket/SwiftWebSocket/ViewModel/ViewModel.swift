@@ -10,7 +10,6 @@ import WebRTC
 import AVFoundation
 
 class ViewModel: ObservableObject {
-
     @Published var webSocketManager: WebSocketManager?
     @Published var webRTC: WebRTCClient?
     @Published var users: [User] = []
@@ -26,8 +25,9 @@ class ViewModel: ObservableObject {
 
     @Published var speakerOn: Bool = false
     @Published var mute: Bool = false
+    @Published var hide: Bool = false
 
-    @Published var remoteVideoTracks: [RTCVideoTrack] = []
+    @Published var remoteVideoTracks: [String : RTCVideoTrack] = [:]
 
 
 //    fileprivate let defaultIceServers = ["stun:stun.l.google.com:19302",
@@ -90,14 +90,23 @@ class ViewModel: ObservableObject {
         }
     }
 
-    func addRemoteVideoTrack(_ track: RTCVideoTrack) {
-        remoteVideoTracks.append(track)
+    func hideOn() {
+        self.hide = !self.hide
+        if self.hide {
+            self.webRTC?.hideVideo()
+        }
+        else {
+            self.webRTC?.showVideo()
+        }
     }
 
-    func removeRemoteVideoTrack(_ track: RTCVideoTrack) {
-        if let index = remoteVideoTracks.firstIndex(of: track) {
-            remoteVideoTracks.remove(at: index)
-        }
+    func addRemoteVideoTrack(_ track: RTCVideoTrack) {
+        remoteVideoTracks[track.trackId] = track
+    }
+
+    func removeRemoteVideoTrack(_ id: String) {
+        print(id)
+        remoteVideoTracks.removeValue(forKey: id)
     }
 }
 
@@ -275,7 +284,7 @@ extension ViewModel: WebRTCClientDelegate {
     }
 
     func webRTCClient(_ client: WebRTCClient, didRemoveRemoteVideoTrack track: RTCVideoTrack) {
-        removeRemoteVideoTrack(track)
+        removeRemoteVideoTrack(track.trackId)
     }
 }
 

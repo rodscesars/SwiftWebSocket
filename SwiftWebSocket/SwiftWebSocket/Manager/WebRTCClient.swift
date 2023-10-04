@@ -31,9 +31,6 @@ final class WebRTCClient: NSObject {
     private var videoCapturer: RTCVideoCapturer?
     var localVideoTrack: RTCVideoTrack?
 
-//    var remoteVideoTrack: RTCVideoTrack?
-    var remoteVideoTracks: [RTCVideoTrack] = []
-
     required init(iceServers: [RTCIceServer]) {
         let config = RTCConfiguration()
         config.iceServers = iceServers
@@ -119,18 +116,6 @@ final class WebRTCClient: NSObject {
 //        self.localVideoTrack?.add(renderer)
     }
 
-//    func renderRemoteVideo(to renderer: RTCVideoRenderer) {
-//        self.remoteVideoTrack?.add(renderer)
-//    }
-
-//    func renderRemoteVideo(to renderers: [RTCVideoRenderer]) {
-//        for (index, videoTrack) in remoteVideoTracks.enumerated() {
-//            if index < renderers.count {
-//                videoTrack.add(renderers[index])
-//            }
-//        }
-//    }
-
     private func configureAudioSession() {
         self.rtcAudioSession.lockForConfiguration()
         do {
@@ -153,7 +138,6 @@ final class WebRTCClient: NSObject {
         let videoTrack = self.createVideoTrack()
         self.localVideoTrack = videoTrack
         self.peerConnection.add(videoTrack, streamIds: [streamId])
-//        self.remoteVideoTrack = self.peerConnection.transceivers.first { $0.mediaType == .video }?.receiver.track as? RTCVideoTrack
     }
 
     private func createAudioTrack() -> RTCAudioTrack {
@@ -186,7 +170,7 @@ extension WebRTCClient: RTCPeerConnectionDelegate {
         debugPrint("peerConnection did add stream")
 
         for videoTrack in stream.videoTracks {
-            remoteVideoTracks.append(videoTrack)
+            print(videoTrack)
             delegate?.webRTCClient(self, didAddRemoteVideoTrack: videoTrack)
         }
     }
@@ -194,10 +178,7 @@ extension WebRTCClient: RTCPeerConnectionDelegate {
     func peerConnection(_ peerConnection: RTCPeerConnection, didRemove stream: RTCMediaStream) {
         debugPrint("peerConnection did remove stream")
         for videoTrack in stream.videoTracks {
-            if let index = remoteVideoTracks.firstIndex(of: videoTrack) {
-                remoteVideoTracks.remove(at: index)
-                delegate?.webRTCClient(self, didRemoveRemoteVideoTrack: videoTrack)
-            }
+            delegate?.webRTCClient(self, didRemoveRemoteVideoTrack: videoTrack)
         }
     }
 
