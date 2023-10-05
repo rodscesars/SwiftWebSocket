@@ -231,7 +231,6 @@ extension ViewModel: WebSocketConnectionDelegate {
             
         case "ice":
             if let candidateData = jsonObject["candidate"] as? [String: Any],
-               let streamId = jsonObject["id"] as? String,
                let candidate = candidateData["candidate"] as? String,
                let sdpMLineIndex = candidateData["sdpMLineIndex"] as? Int32,
                let sdpMid = candidateData["sdpMid"] as? String {
@@ -242,7 +241,6 @@ extension ViewModel: WebSocketConnectionDelegate {
                     self?.webRTC?.set(remoteCandidate: iceCandidate) { error in
                         print("Received remote candidate")
                     }
-                    self?.sendIce(candidate: iceCandidate, streamId: streamId)
                 }
             }
 
@@ -251,7 +249,6 @@ extension ViewModel: WebSocketConnectionDelegate {
                 DispatchQueue.main.async { [weak self] in
                     self?.webSocketManager?.negotiate(streamId: streamId)
                 }
-
             }
 
         default:
