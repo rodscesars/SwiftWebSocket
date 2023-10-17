@@ -11,7 +11,6 @@ import AVFoundation
 
 class ViewModel: ObservableObject {
     var webSocketManager: WebSocketManager?
-    var webRTC: WebRTCClient?
     @Published var users: [User] = []
     @Published var messages: [ChatMessage] = []
     @Published var conected = false
@@ -27,13 +26,24 @@ class ViewModel: ObservableObject {
     @Published var mute: Bool = false
     @Published var hide: Bool = false
 
-    @Published var remoteVideoTracks: [String : RTCVideoTrack] = [:]
+    var iceServerList: [RTCIceServer] = []
+
+    @Published var upStream: [String : WebRTCClient] = [:]
+    @Published var downStream: [String : WebRTCClient] = [:]
+
+    var localVideoTrack: RTCVideoTrack? {
+        upStream[streamId]?.localVideoTrack
+    }
+
+    var remoteVideoTracks: [RTCVideoTrack?] {
+        downStream.map { key, value in
+            value.localVideoTrack
+        }
+    }
 
     init() {
         webSocketManager = WebSocketManager()
         webSocketManager?.delegate = self
-//        webRTC = WebRTCClient(iceServers: defaultIceServers)
-//        webRTC?.delegate = self
     }
 
     func joinRoom() {
@@ -46,58 +56,54 @@ class ViewModel: ObservableObject {
     }
 
     func sendSession() {
-        webRTC?.offer { (sdp) in
+        let webRTC = WebRTCClient(iceServers: iceServerList, id: streamId)
+        upStream[streamId] = webRTC
+
+        upStream[streamId]?.offer { sdp in
             self.webSocketManager?.sendOffer(sdp: sdp, userId: self.id, username: self.username, streamId: self.streamId)
         }
-    }
 
-    func answerSession(streamId: String) {
-        webRTC?.answer { (sdp) in
-            self.webSocketManager?.sendAnswer(sdp: sdp, streamId: streamId)
-        }
+        upStream[streamId]?.localIceCandidates.forEach({ candidate in
+            sendIce(candidate: candidate, streamId: streamId)
+        })
     }
 
     func sendIce(candidate: RTCIceCandidate, streamId: String) {
         self.webSocketManager?.sendIce(candidate: candidate, streamId: streamId)
     }
 
-    func speaker() {
-        if self.speakerOn {
-            self.webRTC?.speakerOff()
-        }
-        else {
-            self.webRTC?.speakerOn()
-        }
-        self.speakerOn = !self.speakerOn
-    }
+//    func speaker() {
+//        if self.speakerOn {
+//            self.webRTC?.speakerOff()
+//        }
+//        else {
+//            self.webRTC?.speakerOn()
+//        }
+//        self.speakerOn = !self.speakerOn
+//    }
 
-    func muteOn() {
-        self.mute = !self.mute
-        if self.mute {
-            self.webRTC?.muteAudio()
-        }
-        else {
-            self.webRTC?.unmuteAudio()
-        }
-    }
+//    func muteOn() {
+//        self.mute = !self.mute
+//        if self.mute {
+//            self.webRTC?.muteAudio()
+//        }
+//        else {
+//            self.webRTC?.unmuteAudio()
+//        }
+//    }
 
-    func hideOn() {
-        self.hide = !self.hide
-        if self.hide {
-            self.webRTC?.hideVideo()
-        }
-        else {
-            self.webRTC?.showVideo()
-        }
-    }
+//    func hideOn() {
+//        self.hide = !self.hide
+//        if self.hide {
+//            self.webRTC?.hideVideo()
+//        }
+//        else {
+//            self.webRTC?.showVideo()
+//        }
+//    }
 
-    func addRemoteVideoTrack(_ track: RTCVideoTrack) {
-        remoteVideoTracks[track.trackId] = track
-    }
-
-    func removeRemoteVideoTrack(_ id: String) {
-        print(id)
-        remoteVideoTracks.removeValue(forKey: id)
+    func sendRenegotiate(id: String) {
+        webSocketManager?.sendRenegotiate(id: id)
     }
 }
 
@@ -135,22 +141,16 @@ extension ViewModel: WebSocketConnectionDelegate {
             if let rtcConfiguration = jsonObject["rtcConfiguration"] as? [String: Any],
                let iceServers = rtcConfiguration["iceServers"] as? [[String: Any]] {
 
-               var iceServerList: [RTCIceServer] = []
 
-               for iceServerInfo in iceServers {
-                   if let urls = iceServerInfo["urls"] as? [String],
-                      let username = iceServerInfo["username"] as? String,
-                      let credential = iceServerInfo["credential"] as? String {
+                for iceServerInfo in iceServers {
+                    if let urls = iceServerInfo["urls"] as? [String],
+                       let username = iceServerInfo["username"] as? String,
+                       let credential = iceServerInfo["credential"] as? String {
 
-                       let iceServer = RTCIceServer(urlStrings: urls, username: username, credential: credential)
-                       iceServerList.append(iceServer)
-                   }
-               }
-                DispatchQueue.main.async { [weak self] in
-                    self?.webRTC = WebRTCClient(iceServers: iceServerList)
-                    self?.webRTC?.delegate = self
+                        let iceServer = RTCIceServer(urlStrings: urls, username: username, credential: credential)
+                        iceServerList.append(iceServer)
+                    }
                 }
-
             }
 
         case "user":
@@ -158,7 +158,7 @@ extension ViewModel: WebSocketConnectionDelegate {
             decoder.keyDecodingStrategy = .convertFromSnakeCase
 
             if let kind = jsonObject["kind"] as? String, kind == "delete", let id = jsonObject["id"] {
-                            DispatchQueue.main.async { [weak self] in
+                DispatchQueue.main.async { [weak self] in
                     self?.users.removeAll(where: { user in
                         return user.id == id as! String
                     })
@@ -207,47 +207,58 @@ extension ViewModel: WebSocketConnectionDelegate {
                 if let sdpString = jsonObject["sdp"] as? String {
                     let sdp = RTCSessionDescription(type: .offer, sdp: sdpString)
 
-                    DispatchQueue.main.async { [weak self] in
-                        self?.webRTC?.set(remoteSdp: sdp) { (error) in
-                            print("Received remote sdp")
+                    if (downStream[id] != nil) {
+                        print("there is a peerconnection on the dict already")
+                    } else {
+                        let webRTC = WebRTCClient(iceServers: iceServerList, id: id)
+                        webRTC.delegate = self
+
+                        DispatchQueue.main.async { [weak self] in
+                            self?.downStream[id] = webRTC
+
+                            self?.downStream[id]?.set(remoteSdp: sdp) { (error) in
+                                print("Received remote sdp")
+                            }
+
+                            self?.downStream[id]?.answer(completion: { sdp in
+                                self?.webSocketManager?.sendAnswer(sdp: sdp, streamId: id)
+                            })
+
+                            self?.downStream[id]?.localIceCandidates.forEach({ candidate in
+                                self?.sendIce(candidate: candidate, streamId: id)
+                            })
+
                         }
-                        self?.answerSession(streamId: id)
                     }
                 }
             }
-
 
         case "answer":
-             if let sdpString = jsonObject["sdp"] as? String {
+            if let sdpString = jsonObject["sdp"] as? String,
+               let id = jsonObject["id"] as? String {
 
-                 let sdp = RTCSessionDescription(type: .answer, sdp: sdpString)
+                let sdp = RTCSessionDescription(type: .answer, sdp: sdpString)
 
-                DispatchQueue.main.async { [weak self] in
-                    self?.webRTC?.set(remoteSdp: sdp ) { error in
-                        print("Received remote sdp")
-                    }
+                guard let peerConnection = upStream[id] else { return }
+
+                peerConnection.set(remoteSdp: sdp) { error in
+                    print("Received remote sdp")
                 }
             }
-            
+
         case "ice":
             if let candidateData = jsonObject["candidate"] as? [String: Any],
+               let streamId = jsonObject["id"] as? String,
                let candidate = candidateData["candidate"] as? String,
                let sdpMLineIndex = candidateData["sdpMLineIndex"] as? Int32,
                let sdpMid = candidateData["sdpMid"] as? String {
 
                 let iceCandidate = RTCIceCandidate(sdp: candidate, sdpMLineIndex: sdpMLineIndex, sdpMid: sdpMid)
-                
-                DispatchQueue.main.async { [weak self] in
-                    self?.webRTC?.set(remoteCandidate: iceCandidate) { error in
-                        print("Received remote candidate")
-                    }
-                }
-            }
 
-        case "renegotiate":
-            if let streamId = jsonObject["id"] as? String {
-                DispatchQueue.main.async { [weak self] in
-                    self?.webSocketManager?.negotiate(streamId: streamId)
+                guard let peerConnection = downStream[streamId] else { return }
+
+                peerConnection.set(remoteCandidate: iceCandidate) { error in
+                    print("Received remote candidate")
                 }
             }
 
@@ -263,16 +274,11 @@ extension ViewModel: WebSocketConnectionDelegate {
 
 extension ViewModel: WebRTCClientDelegate {
     func webRTCClient(_ client: WebRTCClient, didDiscoverLocalCandidate candidate: RTCIceCandidate) {
-        print("discovered local candidate")
-        self.sendIce(candidate: candidate, streamId: self.streamId)
+       print("gerou um ice candidate local")
     }
-
-    func webRTCClient(_ client: WebRTCClient, didAddRemoteVideoTrack track: RTCVideoTrack) {
-        addRemoteVideoTrack(track)
-    }
-
-    func webRTCClient(_ client: WebRTCClient, didRemoveRemoteVideoTrack track: RTCVideoTrack) {
-        removeRemoteVideoTrack(track.trackId)
+    
+    func webRTCClient(_ client: WebRTCClient) {
+        self.sendRenegotiate(id: client.id)
     }
 }
 

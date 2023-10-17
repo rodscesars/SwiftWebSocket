@@ -13,9 +13,9 @@ struct VideoCallView: View {
 
     var body: some View {
         VStack(spacing: 10) {
-            VideoView(videoTrack: viewModel.webRTC?.localVideoTrack).frame(width: 160, height: 160)
+            VideoView(videoTrack: viewModel.localVideoTrack).frame(width: 160, height: 160)
 
-            ForEach(Array(viewModel.remoteVideoTracks.values), id: \.self) { value in
+            ForEach(viewModel.remoteVideoTracks, id: \.self) { value in
                 VideoView(videoTrack: value).frame(width: 160, height: 160)
             }
 

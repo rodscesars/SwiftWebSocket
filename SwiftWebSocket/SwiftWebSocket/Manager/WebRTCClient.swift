@@ -9,9 +9,7 @@ import Foundation
 import WebRTC
 
 protocol WebRTCClientDelegate: AnyObject {
-    func webRTCClient(_ client: WebRTCClient, didDiscoverLocalCandidate candidate: RTCIceCandidate)
-    func webRTCClient(_ client: WebRTCClient, didRemoveRemoteVideoTrack track: RTCVideoTrack)
-    func webRTCClient(_ client: WebRTCClient, didAddRemoteVideoTrack track: RTCVideoTrack)
+    func webRTCClient(_ client: WebRTCClient)
 }
 
 final class WebRTCClient: NSObject {
@@ -30,8 +28,16 @@ final class WebRTCClient: NSObject {
                                    kRTCMediaConstraintsOfferToReceiveVideo: kRTCMediaConstraintsValueTrue]
     private var videoCapturer: RTCVideoCapturer?
     var localVideoTrack: RTCVideoTrack?
+    var remoteVideoTrack: RTCVideoTrack?
 
-    required init(iceServers: [RTCIceServer]) {
+    var id: String
+
+    var localIceCandidates: [RTCIceCandidate] = []
+
+    required init(iceServers: [RTCIceServer], id: String) {
+
+        self.id = id
+
         let config = RTCConfiguration()
         config.iceServers = iceServers
 
@@ -113,7 +119,6 @@ final class WebRTCClient: NSObject {
                               format: format,
                               fps: Int(fps.maxFrameRate))
 
-//        self.localVideoTrack?.add(renderer)
     }
 
     private func configureAudioSession() {
@@ -170,16 +175,12 @@ extension WebRTCClient: RTCPeerConnectionDelegate {
         debugPrint("peerConnection did add stream")
 
         for videoTrack in stream.videoTracks {
-            print(videoTrack)
-            delegate?.webRTCClient(self, didAddRemoteVideoTrack: videoTrack)
+            self.remoteVideoTrack = videoTrack
         }
     }
 
     func peerConnection(_ peerConnection: RTCPeerConnection, didRemove stream: RTCMediaStream) {
         debugPrint("peerConnection did remove stream")
-        for videoTrack in stream.videoTracks {
-            delegate?.webRTCClient(self, didRemoveRemoteVideoTrack: videoTrack)
-        }
     }
 
     func peerConnectionShouldNegotiate(_ peerConnection: RTCPeerConnection) {
@@ -195,7 +196,7 @@ extension WebRTCClient: RTCPeerConnectionDelegate {
     }
 
     func peerConnection(_ peerConnection: RTCPeerConnection, didGenerate candidate: RTCIceCandidate) {
-        self.delegate?.webRTCClient(self, didDiscoverLocalCandidate: candidate)
+        self.localIceCandidates.append(candidate)
     }
 
     func peerConnection(_ peerConnection: RTCPeerConnection, didRemove candidates: [RTCIceCandidate]) {

@@ -153,11 +153,24 @@ class WebSocketManager: NSObject, WebSocketConnection {
     func negotiate(streamId: String){
 
         let negotiateData: [String: Any] = ["type": "requestStream",
-                                       "id": streamId,
-                                       "request": ["audio", "video"]
-    ]
+                                            "id": streamId,
+                                            "request": ["audio", "video"]
+        ]
 
         let messageJson = try? JSONSerialization.data(withJSONObject: negotiateData)
+
+        if let data = messageJson {
+            self.send(data: data)
+        }
+    }
+
+    func sendRenegotiate(id: String){
+
+        let renegotiateData: [String: Any?] = ["type":"renegotiate",
+                                               "id": id,
+        ]
+
+        let messageJson = try? JSONSerialization.data(withJSONObject: renegotiateData)
 
         if let data = messageJson {
             self.send(data: data)
