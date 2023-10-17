@@ -261,6 +261,14 @@ extension ViewModel: WebSocketConnectionDelegate {
                 }
             }
 
+        case "close":
+            if let id = jsonObject["id"] as? String {
+                
+                DispatchQueue.main.async { [weak self] in
+                    self?.downStream.removeValue(forKey: id)
+                }
+            }
+
         default:
             break
         }

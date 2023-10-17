@@ -32,10 +32,6 @@ final class WebRTCClient: NSObject {
 
     var id: String
 
-    var localIceCandidates: [RTCIceCandidate] = []
-
-    var localIceCandidateCallback: ((RTCIceCandidate) -> Void)?
-
     required init(iceServers: [RTCIceServer], id: String) {
 
         self.id = id
