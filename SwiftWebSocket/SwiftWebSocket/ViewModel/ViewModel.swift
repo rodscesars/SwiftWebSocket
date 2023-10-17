@@ -37,7 +37,7 @@ class ViewModel: ObservableObject {
 
     var remoteVideoTracks: [RTCVideoTrack?] {
         downStream.map { key, value in
-            value.localVideoTrack
+            return value.remoteVideoTrack
         }
     }
 
@@ -56,51 +56,48 @@ class ViewModel: ObservableObject {
     }
 
     func sendSession() {
-        let webRTC = WebRTCClient(iceServers: iceServerList, id: streamId)
-        upStream[streamId] = webRTC
-
         upStream[streamId]?.offer { sdp in
             self.webSocketManager?.sendOffer(sdp: sdp, userId: self.id, username: self.username, streamId: self.streamId)
         }
+    }
 
-        upStream[streamId]?.localIceCandidates.forEach({ candidate in
-            sendIce(candidate: candidate, streamId: streamId)
-        })
+    func endSession() {
+        self.webSocketManager?.closeStream(streamId: streamId)
     }
 
     func sendIce(candidate: RTCIceCandidate, streamId: String) {
         self.webSocketManager?.sendIce(candidate: candidate, streamId: streamId)
     }
 
-//    func speaker() {
-//        if self.speakerOn {
-//            self.webRTC?.speakerOff()
-//        }
-//        else {
-//            self.webRTC?.speakerOn()
-//        }
-//        self.speakerOn = !self.speakerOn
-//    }
+    func speaker() {
+        if self.speakerOn {
+            self.upStream.values.first!.speakerOff()
+        }
+        else {
+            self.upStream.values.first!.speakerOn()
+        }
+        self.speakerOn = !self.speakerOn
+    }
 
-//    func muteOn() {
-//        self.mute = !self.mute
-//        if self.mute {
-//            self.webRTC?.muteAudio()
-//        }
-//        else {
-//            self.webRTC?.unmuteAudio()
-//        }
-//    }
+    func muteOn() {
+        self.mute = !self.mute
+        if self.mute {
+            self.upStream.values.first!.muteAudio()
+        }
+        else {
+            self.upStream.values.first!.unmuteAudio()
+        }
+    }
 
-//    func hideOn() {
-//        self.hide = !self.hide
-//        if self.hide {
-//            self.webRTC?.hideVideo()
-//        }
-//        else {
-//            self.webRTC?.showVideo()
-//        }
-//    }
+    func hideOn() {
+        self.hide = !self.hide
+        if self.hide {
+            self.upStream.values.first!.hideVideo()
+        }
+        else {
+            self.upStream.values.first!.showVideo()
+        }
+    }
 
     func sendRenegotiate(id: String) {
         webSocketManager?.sendRenegotiate(id: id)
@@ -150,6 +147,12 @@ extension ViewModel: WebSocketConnectionDelegate {
                         let iceServer = RTCIceServer(urlStrings: urls, username: username, credential: credential)
                         iceServerList.append(iceServer)
                     }
+                }
+
+                let webRTC = WebRTCClient(iceServers: iceServerList, id: streamId)
+
+                DispatchQueue.main.async { [weak self] in
+                    self?.upStream[webRTC.id] = webRTC
                 }
             }
 
@@ -203,34 +206,30 @@ extension ViewModel: WebSocketConnectionDelegate {
 
 
         case "offer":
-            if let id = jsonObject["id"] as? String {
-                if let sdpString = jsonObject["sdp"] as? String {
-                    let sdp = RTCSessionDescription(type: .offer, sdp: sdpString)
+            if let id = jsonObject["id"] as? String,
+               let sdpString = jsonObject["sdp"] as? String {
 
-                    if (downStream[id] != nil) {
-                        print("there is a peerconnection on the dict already")
-                    } else {
-                        let webRTC = WebRTCClient(iceServers: iceServerList, id: id)
-                        webRTC.delegate = self
+                let sdp = RTCSessionDescription(type: .offer, sdp: sdpString)
 
-                        DispatchQueue.main.async { [weak self] in
-                            self?.downStream[id] = webRTC
+                if (downStream[id] != nil) {
+                    print("there is a peerconnection on the dict already")
+                } else {
+                    let webRTC = WebRTCClient(iceServers: iceServerList, id: id)
+                    webRTC.delegate = self
 
-                            self?.downStream[id]?.set(remoteSdp: sdp) { (error) in
-                                print("Received remote sdp")
-                            }
+                    DispatchQueue.main.async { [weak self] in
+                        self?.downStream[id] = webRTC
 
-                            self?.downStream[id]?.answer(completion: { sdp in
-                                self?.webSocketManager?.sendAnswer(sdp: sdp, streamId: id)
-                            })
-
-                            self?.downStream[id]?.localIceCandidates.forEach({ candidate in
-                                self?.sendIce(candidate: candidate, streamId: id)
-                            })
-
+                        self?.downStream[id]?.set(remoteSdp: sdp) { (error) in
+                            print("Received remote sdp")
                         }
+
+                        self?.downStream[id]?.answer(completion: { sdp in
+                            self?.webSocketManager?.sendAnswer(sdp: sdp, streamId: id)
+                        })
                     }
                 }
+
             }
 
         case "answer":
@@ -258,7 +257,7 @@ extension ViewModel: WebSocketConnectionDelegate {
                 guard let peerConnection = downStream[streamId] else { return }
 
                 peerConnection.set(remoteCandidate: iceCandidate) { error in
-                    print("Received remote candidate")
+                    print("Recebeu um candidato remoto")
                 }
             }
 
@@ -274,11 +273,8 @@ extension ViewModel: WebSocketConnectionDelegate {
 
 extension ViewModel: WebRTCClientDelegate {
     func webRTCClient(_ client: WebRTCClient, didDiscoverLocalCandidate candidate: RTCIceCandidate) {
-       print("gerou um ice candidate local")
-    }
-    
-    func webRTCClient(_ client: WebRTCClient) {
-        self.sendRenegotiate(id: client.id)
+        print("gerou um ice candidate local")
+        self.sendIce(candidate: candidate, streamId: client.id)
     }
 }
 

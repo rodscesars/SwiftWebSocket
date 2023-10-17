@@ -9,7 +9,7 @@ import Foundation
 import WebRTC
 
 protocol WebRTCClientDelegate: AnyObject {
-    func webRTCClient(_ client: WebRTCClient)
+    func webRTCClient(_ client: WebRTCClient, didDiscoverLocalCandidate candidate: RTCIceCandidate)
 }
 
 final class WebRTCClient: NSObject {
@@ -33,6 +33,8 @@ final class WebRTCClient: NSObject {
     var id: String
 
     var localIceCandidates: [RTCIceCandidate] = []
+
+    var localIceCandidateCallback: ((RTCIceCandidate) -> Void)?
 
     required init(iceServers: [RTCIceServer], id: String) {
 
@@ -105,13 +107,13 @@ final class WebRTCClient: NSObject {
         guard
             let frontCamera = (RTCCameraVideoCapturer.captureDevices().first { $0.position == .front }),
 
-            let format = (RTCCameraVideoCapturer.supportedFormats(for: frontCamera).sorted { (f1, f2) -> Bool in
-                let width1 = CMVideoFormatDescriptionGetDimensions(f1.formatDescription).width
-                let width2 = CMVideoFormatDescriptionGetDimensions(f2.formatDescription).width
-                return width1 < width2
-            }).last,
+                let format = (RTCCameraVideoCapturer.supportedFormats(for: frontCamera).sorted { (f1, f2) -> Bool in
+                    let width1 = CMVideoFormatDescriptionGetDimensions(f1.formatDescription).width
+                    let width2 = CMVideoFormatDescriptionGetDimensions(f2.formatDescription).width
+                    return width1 < width2
+                }).last,
 
-            let fps = (format.videoSupportedFrameRateRanges.sorted { return $0.maxFrameRate < $1.maxFrameRate }.last) else {
+                let fps = (format.videoSupportedFrameRateRanges.sorted { return $0.maxFrameRate < $1.maxFrameRate }.last) else {
             return
         }
 
@@ -155,11 +157,11 @@ final class WebRTCClient: NSObject {
     private func createVideoTrack() -> RTCVideoTrack {
         let videoSource = WebRTCClient.factory.videoSource()
 
-        #if targetEnvironment(simulator)
+#if targetEnvironment(simulator)
         self.videoCapturer = RTCFileVideoCapturer(delegate: videoSource)
-        #else
+#else
         self.videoCapturer = RTCCameraVideoCapturer(delegate: videoSource)
-        #endif
+#endif
 
         let videoTrack = WebRTCClient.factory.videoTrack(with: videoSource, trackId: "video0")
         return videoTrack
@@ -173,8 +175,8 @@ extension WebRTCClient: RTCPeerConnectionDelegate {
 
     func peerConnection(_ peerConnection: RTCPeerConnection, didAdd stream: RTCMediaStream) {
         debugPrint("peerConnection did add stream")
-
         for videoTrack in stream.videoTracks {
+            print(videoTrack)
             self.remoteVideoTrack = videoTrack
         }
     }
@@ -196,8 +198,9 @@ extension WebRTCClient: RTCPeerConnectionDelegate {
     }
 
     func peerConnection(_ peerConnection: RTCPeerConnection, didGenerate candidate: RTCIceCandidate) {
-        self.localIceCandidates.append(candidate)
+        self.delegate?.webRTCClient(self, didDiscoverLocalCandidate: candidate)
     }
+
 
     func peerConnection(_ peerConnection: RTCPeerConnection, didRemove candidates: [RTCIceCandidate]) {
         debugPrint("peerConnection did remove candidate(s)")

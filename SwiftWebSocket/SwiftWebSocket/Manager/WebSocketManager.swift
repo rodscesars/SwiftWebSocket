@@ -177,6 +177,18 @@ class WebSocketManager: NSObject, WebSocketConnection {
         }
     }
 
+    func closeStream(streamId: String) {
+        let closeData: [String: Any?] = [    "type": "close",
+                                             "id": streamId
+        ]
+
+        let messageJson = try? JSONSerialization.data(withJSONObject: closeData)
+
+        if let data = messageJson {
+            self.send(data: data)
+        }
+    }
+
     func listen()  {
         webSocketTask.receive { result in
             switch result {

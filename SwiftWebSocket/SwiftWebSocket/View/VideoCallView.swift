@@ -13,14 +13,22 @@ struct VideoCallView: View {
 
     var body: some View {
         VStack(spacing: 10) {
+            Spacer()
+
             VideoView(videoTrack: viewModel.localVideoTrack).frame(width: 160, height: 160)
-
-            ForEach(viewModel.remoteVideoTracks, id: \.self) { value in
-                VideoView(videoTrack: value).frame(width: 160, height: 160)
+            
+            List {
+                ForEach(viewModel.remoteVideoTracks, id: \.self) { value in
+                    HStack {
+                        Spacer()
+                        VideoView(videoTrack: value).frame(width: 160, height: 160)
+                        Spacer()
+                    }
+                }
             }
-
-        }.onAppear {
-            viewModel.webRTC?.startCaptureLocalVideo()
+        }
+        .onAppear {
+            viewModel.upStream.values.first!.startCaptureLocalVideo()
         }.toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 HStack {
@@ -49,6 +57,12 @@ struct VideoCallView: View {
                         viewModel.hideOn()
                     } label: {
                         Image(systemName: viewModel.hide ? "video.slash.fill" : "video.fill").font(.system(size: 15))
+                    }
+
+                    Button {
+                        viewModel.endSession()
+                    } label: {
+                        Image(systemName: "xmark.circle.fill").font(.system(size: 15))
                     }
 
                 }
