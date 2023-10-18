@@ -28,11 +28,11 @@ class ViewModel: ObservableObject {
 
     var iceServerList: [RTCIceServer] = []
 
-    @Published var upStream: [String : WebRTCClient] = [:]
+    @Published var localPeerConnection: WebRTCClient?
     @Published var downStream: [String : WebRTCClient] = [:]
 
     var localVideoTrack: RTCVideoTrack? {
-        upStream[streamId]?.localVideoTrack
+        localPeerConnection?.localVideoTrack
     }
 
     var remoteVideoTracks: [RTCVideoTrack?] {
@@ -56,7 +56,7 @@ class ViewModel: ObservableObject {
     }
 
     func sendSession() {
-        upStream[streamId]?.offer { sdp in
+        localPeerConnection?.offer { sdp in
             self.webSocketManager?.sendOffer(sdp: sdp, userId: self.id, username: self.username, streamId: self.streamId)
         }
     }
@@ -71,10 +71,10 @@ class ViewModel: ObservableObject {
 
     func speaker() {
         if self.speakerOn {
-            self.upStream.values.first!.speakerOff()
+            self.localPeerConnection?.speakerOff()
         }
         else {
-            self.upStream.values.first!.speakerOn()
+            self.localPeerConnection?.speakerOn()
         }
         self.speakerOn = !self.speakerOn
     }
@@ -82,20 +82,20 @@ class ViewModel: ObservableObject {
     func muteOn() {
         self.mute = !self.mute
         if self.mute {
-            self.upStream.values.first!.muteAudio()
+            self.localPeerConnection?.muteAudio()
         }
         else {
-            self.upStream.values.first!.unmuteAudio()
+            self.localPeerConnection?.unmuteAudio()
         }
     }
 
     func hideOn() {
         self.hide = !self.hide
         if self.hide {
-            self.upStream.values.first!.hideVideo()
+            self.localPeerConnection?.hideVideo()
         }
         else {
-            self.upStream.values.first!.showVideo()
+            self.localPeerConnection?.showVideo()
         }
     }
 
@@ -152,7 +152,7 @@ extension ViewModel: WebSocketConnectionDelegate {
                 let webRTC = WebRTCClient(iceServers: iceServerList, id: streamId)
 
                 DispatchQueue.main.async { [weak self] in
-                    self?.upStream[webRTC.id] = webRTC
+                    self?.localPeerConnection = webRTC
                 }
             }
 
@@ -233,14 +233,12 @@ extension ViewModel: WebSocketConnectionDelegate {
             }
 
         case "answer":
-            if let sdpString = jsonObject["sdp"] as? String,
-               let id = jsonObject["id"] as? String {
+            if let sdpString = jsonObject["sdp"] as? String
+                {
 
                 let sdp = RTCSessionDescription(type: .answer, sdp: sdpString)
 
-                guard let peerConnection = upStream[id] else { return }
-
-                peerConnection.set(remoteSdp: sdp) { error in
+                localPeerConnection?.set(remoteSdp: sdp) { error in
                     print("Received remote sdp")
                 }
             }

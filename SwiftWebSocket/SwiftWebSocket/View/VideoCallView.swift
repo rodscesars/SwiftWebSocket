@@ -28,7 +28,7 @@ struct VideoCallView: View {
             }
         }
         .onAppear {
-            viewModel.upStream.values.first!.startCaptureLocalVideo()
+            viewModel.localPeerConnection?.startCaptureLocalVideo()
         }.toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 HStack {

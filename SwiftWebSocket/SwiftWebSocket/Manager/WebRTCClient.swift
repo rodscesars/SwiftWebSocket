@@ -153,11 +153,11 @@ final class WebRTCClient: NSObject {
     private func createVideoTrack() -> RTCVideoTrack {
         let videoSource = WebRTCClient.factory.videoSource()
 
-#if targetEnvironment(simulator)
+        #if targetEnvironment(simulator)
         self.videoCapturer = RTCFileVideoCapturer(delegate: videoSource)
-#else
+        #else
         self.videoCapturer = RTCCameraVideoCapturer(delegate: videoSource)
-#endif
+        #endif
 
         let videoTrack = WebRTCClient.factory.videoTrack(with: videoSource, trackId: "video0")
         return videoTrack
@@ -179,6 +179,7 @@ extension WebRTCClient: RTCPeerConnectionDelegate {
 
     func peerConnection(_ peerConnection: RTCPeerConnection, didRemove stream: RTCMediaStream) {
         debugPrint("peerConnection did remove stream")
+        self.remoteVideoTrack = nil
     }
 
     func peerConnectionShouldNegotiate(_ peerConnection: RTCPeerConnection) {
